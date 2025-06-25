@@ -1,0 +1,122 @@
+Here is a **detailed textual explanation** of how your Arduino code works, step by step, **without code or diagrams**:
+
+---
+
+## **General Function of the Code**
+
+This Arduino program allows a user to input a **text message** (e.g., "HELLO") using the **Serial Monitor**. The Arduino then converts that message into a **binary string** using **ASCII encoding**, and transmits it one bit at a time using two LEDs:
+
+* One LED represents the binary digit **0**.
+* The other LED represents the binary digit **1**.
+
+This transmission uses a signaling method called **Return-to-Zero (RZ)**, where each bit is shown for 500 milliseconds, followed by both LEDs being turned off for 500 milliseconds, before the next bit is transmitted.
+
+---
+
+## **Step-by-Step Flow**
+
+### **1. Initialization**
+
+When the Arduino starts:
+
+* It configures the two LED pins as **outputs**.
+* It initializes the **serial communication** with the computer (via USB), so the user can input text from the Serial Monitor.
+* A message is printed asking the user to "Enter text to transmit."
+
+---
+
+### **2. Reading the User’s Input**
+
+The Arduino constantly checks whether new text has been entered in the Serial Monitor.
+
+* If the user enters text and presses Enter, that input is read as a string.
+* The input string is **cleaned of unnecessary spaces or newlines** using the `trim()` function.
+
+---
+
+### **3. Converting Text to Binary (ASCII Format)**
+
+The cleaned input string is passed to a **converter function** that:
+
+* Goes through each character in the text.
+* Converts each character into its **ASCII numeric value**.
+* Then converts that numeric value into its **8-bit binary representation**.
+* All the resulting bits are combined into a single long binary string.
+
+For example:
+
+* If the user enters the letter `A`, it is converted to ASCII value `65`.
+* That is represented in binary as `01000001`.
+
+If the user enters `"HI"`, the full binary string becomes: `0100100001001001`.
+
+This binary string is now stored and ready to be transmitted.
+
+---
+
+### **4. Starting the Transmission**
+
+Before transmitting the actual bits, the Arduino sends a **start signal**:
+
+* Both LEDs are turned on for **2 seconds** to indicate to the receiver that data is about to be sent.
+* Then both LEDs are turned off for **1 second** as a pause before the actual data starts.
+
+---
+
+### **5. Sending the Binary Bits One by One**
+
+After the start signal, the Arduino begins **sending one bit at a time** from the binary string.
+
+Here’s how it works:
+
+* It keeps track of the current bit position in the string using an index.
+* For each bit:
+
+  * If the bit is `'0'`, the LED assigned for **0** is turned on.
+  * If the bit is `'1'`, the LED assigned for **1** is turned on.
+  * The LED stays on for **500 milliseconds**.
+  * After that, both LEDs are turned off for **another 500 milliseconds** to complete one RZ bit cycle.
+* The index is then increased to move to the next bit.
+
+This continues until **all bits in the binary string** are sent.
+
+---
+
+### **6. Completion of Transmission**
+
+Once the Arduino finishes sending all bits:
+
+* It stops the transmission by setting a flag (`transmitting = false`).
+* It prints `"Transmission complete. Enter next bit sequence:"` to inform the user that it is ready for another message.
+* Then the program waits for a new input from the Serial Monitor to repeat the process.
+
+---
+
+## **How the ASCII to Binary Converter Works**
+
+This part of the program is a separate function used to **convert any text input into a binary string**.
+
+Here’s the logic:
+
+* For each character in the text:
+
+  * Get its ASCII value using the `byte()` function.
+  * Then use a loop to extract the bits of that ASCII value from **most significant bit (MSB)** to **least significant bit (LSB)**.
+  * Each extracted bit (0 or 1) is added to a result string.
+* The final output is a long string of `0`s and `1`s representing the full text.
+
+---
+
+## **Summary of How the System Works**
+
+| Step | Description                                                     |
+| ---- | --------------------------------------------------------------- |
+| 1.   | User inputs text via Serial Monitor                             |
+| 2.   | Text is cleaned and converted to ASCII binary                   |
+| 3.   | A start signal is transmitted via LEDs                          |
+| 4.   | Binary bits are transmitted one by one using LEDs and RZ method |
+| 5.   | System prints "Transmission complete" and waits for new input   |
+
+---
+
+Let me know if you also want a **receiver code** that reads the LED pulses and decodes them back into text, or if you'd like timing adjustments or support for special characters.
