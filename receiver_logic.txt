@@ -1,0 +1,75 @@
+const int LDR1 = A1; // LDR for '1'
+const int LDR0 = A0; // LDR for '0'
+const int threshold = 100;
+
+String bitSequence = "";
+
+void setup() {
+  Serial.begin(9600);
+  Serial.println("Waiting for transmission...");
+}
+
+void loop() {
+  // Wait for start signal: both LDRs detect light
+  while (true) {
+    int ldr1Val = analogRead(LDR1);
+    int ldr0Val = analogRead(LDR0);
+    if (ldr1Val < threshold && ldr0Val < threshold) {
+      Serial.println("Start signal detected!");
+      delay(500); // Wait for signal gap
+      break;
+    }
+  }
+
+  // Start receiving bits
+  bitSequence = "";
+  int invalidCount = 0;
+  bool hasStarted = false;
+  while(true) { // Receive max 32 bits (or any desired count)
+    int ldr1Val = analogRead(LDR1);
+    int ldr0Val = analogRead(LDR0);
+
+    if (ldr1Val < threshold && ldr0Val > threshold) {
+      bitSequence += "1";
+      Serial.println("Received Bit: 1");
+      invalidCount = 0;
+      hasStarted = true;
+    } else if (ldr0Val < threshold && ldr1Val > threshold) {
+      bitSequence += "0";
+      Serial.println("Received Bit: 0");
+      invalidCount = 0;
+      hasStarted = true;
+    } else {
+      Serial.println("No valid bit detected");
+      if (hasStarted) {
+      invalidCount++;
+      if (invalidCount>5){
+        Serial.println("Too many invalid bits");
+        break;
+      }
+      }
+      bitSequence += "_"; // optional: mark error
+    }
+
+    delay(500); // Wait for next bit (matches transmitter)
+  }
+
+ // --- Clean and Display Final Bit Sequence ---
+  String cleanedSequence = trimUnderscores(bitSequence);
+  //Serial.println("Raw Bit Sequence:     " + bitSequence);
+  Serial.println("Cleaned Bit Sequence: " + cleanedSequence);
+  Serial.println("Waiting for next transmission...\n");
+
+  delay(1000);
+}
+
+// Function to remove underscores from beginning and end only
+String trimUnderscores(String s) {
+  String cleaned = "";
+  for (int i=0; i<s.length(); i++) {
+    if (s.charAt(i) != '_') {
+      cleaned += s.charAt(i);
+    }
+  }
+  return cleaned;
+}
